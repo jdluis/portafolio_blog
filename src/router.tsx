@@ -2,7 +2,8 @@ import { createBrowserRouter } from "react-router-dom";
 import Layout from "./Layout";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
-import Post from "./pages/Post";
+import Post from "./pages/Articles/Post";
+import PostList from "./pages/Articles/PostsList";
 
 
 
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
             {
                 path: "/about",
                 element: <div>About</div>,
+            },
+            {
+                path: "/posts",
+                element: <PostList />,
             },
             {
                 path: "/post/:id",

@@ -1,57 +1,102 @@
 import express from 'express';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const articlesInfo = [
-    {name: "NodeJS", upvotes: 0},
-    {name: "ReactJS", upvotes: 0},
-    {name: "JavaScript", upvotes: 0},
-    {name: "CSS", upvotes: 0},
-]
+
 
 const app = express();
 app.use(express.json()); // Middleware to parse JSON bodies
 
+// ConnectTO MongoDB
+let db;
+const connectToDB = async () => {
+    const uri = 'mongodb://localhost:27017';
+    const client = new MongoClient(uri, {
+        serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        }
+    }
+    );
+
+    await client.connect();
+
+    db = client.db('blog_fullstack');
+}
+
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
+app.get('/api', (req, res) => {
+    res.send('Welcome to my Blog Api!');
 });
 
-app.post("/article/:name/upvote", (req, res) => {
+app.get('/api/articles', async (req, res) => {
+    try {
+        const articlesCollection = db.collection('articles');
+        const allArticles = await articlesCollection.find().toArray();
+
+        res.json(allArticles);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get('/api/articles/:name', async (req, res) => {
+    try {
+        if (!req.params) {
+            return res.status(400).send('Bad Request: No params provided');
+        }
+        const { name } = req.params;
+
+        const articlesCollection = db.collection('articles');
+        const articleFound = await articlesCollection.findOne({ name });
+        res.json(articleFound);
+    } catch (error) {
+        res.sendStatus(500).send('Internal Server Error');
+    }
+
+});
+
+
+app.post("/article/:name/upvote", async (req, res) => {
     const { name } = req.params;
 
-    const articleFound = articlesInfo.find((article) => article.name === name);
+    const updatedArticle = await db.collection('articles').findOneAndUpdate(
+        { name },
+        { $inc: { upvotes: 1 } },
+        { returnDocument: 'after' }
+    );
 
-    if (!articleFound) {
-        return res.status(404).send('Article not found');
-    }
-
-    articleFound.upvotes += 1;
-    res.send(`Thank you for the upvote on ${articleFound.name} now has ${articleFound.upvotes}!`);
+    return res.json(updatedArticle);
 });
 
-app.get('/hello/:name', (req, res) => {
-
-    if (!req.params) {
-        return res.status(400).send('Bad Request: No params provided');
-    }
-    
+app.post("/article/:name/comment", async (req, res) => {
     const { name } = req.params;
-    res.send(`Hello ${name} from Get params request!`);
+    const { text, postedBy } = req.body;
+
+    const commentToAdd = {text, postedBy}
+
+    const updateArticle = await db.collection('articles').findOneAndUpdate({name}, {
+        $push: {comments: commentToAdd}
+    },
+    {
+        returnDocument: 'after'
+    });
+
+    res.json(updateArticle);
 });
 
-app.post('/', (req, res) => {
 
-    if (!req.body) {
-        return res.status(400).send('Bad Request: No body provided');
-    }
-    
-    console.log(req.body)
-    const { name } = req.body;
-    res.send(`Hello ${name} from POST request!`);
-});
+connectToDB();
 
+async function start() {
+    await connectToDB();
+    console.log('Connected to MongoDB');
+    // Start the server after connecting to the database
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
 
-
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+start();

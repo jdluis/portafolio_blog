@@ -24,7 +24,7 @@ const connectToDB = async () => {
     db = client.db('blog_fullstack');
 }
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 app.get('/api', (req, res) => {
     res.send('Welcome to my Blog Api!');

@@ -1,5 +1,12 @@
 import express from 'express';
 
+const articlesInfo = [
+    {name: "NodeJS", upvotes: 0},
+    {name: "ReactJS", upvotes: 0},
+    {name: "JavaScript", upvotes: 0},
+    {name: "CSS", upvotes: 0},
+]
+
 const app = express();
 app.use(express.json()); // Middleware to parse JSON bodies
 
@@ -7,6 +14,19 @@ const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
+});
+
+app.post("/article/:name/upvote", (req, res) => {
+    const { name } = req.params;
+
+    const articleFound = articlesInfo.find((article) => article.name === name);
+
+    if (!articleFound) {
+        return res.status(404).send('Article not found');
+    }
+
+    articleFound.upvotes += 1;
+    res.send(`Thank you for the upvote on ${articleFound.name} now has ${articleFound.upvotes}!`);
 });
 
 app.get('/hello/:name', (req, res) => {

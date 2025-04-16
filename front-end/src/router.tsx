@@ -5,6 +5,8 @@ import NotFound from "./pages/NotFound";
 import Post from "./pages/Articles/Post";
 import PostList from "./pages/Articles/PostsList";
 import { getArticleByName, getArticles } from "./services/articles.services";
+import Login from "./pages/Login";
+import CreateAccount from "./pages/CreateAccount";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +17,7 @@ const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
+   
       {
         path: "/about",
         element: <div>About</div>,
@@ -24,7 +27,6 @@ const router = createBrowserRouter([
         element: <PostList />,
         loader: async () => {
           const posts = await getArticles();
-          console.log(posts);
           return posts;
         },
       },
@@ -33,7 +35,6 @@ const router = createBrowserRouter([
         element: <Post />,
         loader: async ({ params }) => {
           const post = getArticleByName(params.name as string);
-
           return post;
         },
       },
@@ -43,6 +44,14 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: "/login",
+   element: <Login />,
+ },
+ {
+    path: "/register",
+   element: <CreateAccount />,
+ },
 ]);
 
 export default router;

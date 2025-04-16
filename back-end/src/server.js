@@ -1,7 +1,12 @@
 import express from 'express';
 import { MongoClient, ServerApiVersion } from 'mongodb';
+import admin from 'firebase-admin';
+import fs from 'fs';
+const credential = JSON.parse(fs.readFileSync('./credentials.json', 'utf8'));
 
-
+admin.initializeApp({
+    credential: admin.credential.cert(credential)
+});
 
 const app = express();
 app.use(express.json()); // Middleware to parse JSON bodies
@@ -42,7 +47,7 @@ app.get('/api/articles', async (req, res) => {
     }
 });
 
-app.get('/api/articles/:name', async (req, res) => {
+app.get('/api/article/:name', async (req, res) => {
     try {
         if (!req.params) {
             return res.status(400).send('Bad Request: No params provided');
@@ -58,31 +63,60 @@ app.get('/api/articles/:name', async (req, res) => {
 
 });
 
+app.use(async (req, res, next) => {
+    const { authtoken } = req.headers;
 
-app.post("/article/:name/upvote", async (req, res) => {
-    const { name } = req.params;
+    if (authtoken) {
+        try {
+            const user = await admin.auth().verifyIdToken(authtoken);
+            req.user = user;
 
-    const updatedArticle = await db.collection('articles').findOneAndUpdate(
-        { name },
-        { $inc: { upvotes: 1 } },
-        { returnDocument: 'after' }
-    );
-
-    return res.json(updatedArticle);
+            next();
+        } catch (error) {
+            console.error('Error verifying token:', error);
+            res.sendStatus(403);
+        }
+    } else {
+        res.sendStatus(403);
+    }
 });
 
-app.post("/article/:name/comment", async (req, res) => {
+app.post("/api/article/:name/upvote", async (req, res) => {
+    const { name } = req.params;
+    const { uid } = req.user;
+
+    const article = await db.collection('articles').findOne({ name });
+   
+    const upvoteIds = article.upvoteIds || [];
+    const canUpvtoe = uid && !upvoteIds.includes(uid);
+   
+    if (canUpvtoe) {
+        const updatedArticle = await db.collection('articles').findOneAndUpdate(
+            { name },
+            {
+                $inc: { upvotes: 1 },
+                $push: { upvoteIds: uid }
+            },
+            { returnDocument: 'after' }
+        );
+        return res.json(updatedArticle);
+    } else {
+        return res.status(403).send('Forbidden: User already upvoted this article');
+    }
+});
+
+app.post("/api/article/:name/comment", async (req, res) => {
     const { name } = req.params;
     const { text, postedBy } = req.body;
 
-    const commentToAdd = {text, postedBy}
+    const commentToAdd = { text, postedBy }
 
-    const updateArticle = await db.collection('articles').findOneAndUpdate({name}, {
-        $push: {comments: commentToAdd}
+    const updateArticle = await db.collection('articles').findOneAndUpdate({ name }, {
+        $push: { comments: commentToAdd }
     },
-    {
-        returnDocument: 'after'
-    });
+        {
+            returnDocument: 'after'
+        });
 
     res.json(updateArticle);
 });

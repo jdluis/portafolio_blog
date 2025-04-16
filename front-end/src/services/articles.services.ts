@@ -1,19 +1,9 @@
-export interface Article {
-  id: string;
-  name: string;
-  upvotes: string;
-  comments?:[commentType];
-}
-
-export type commentType = {
-  text: string;
-  postedBy: string;
-}
+import { ArticleType, commentType } from "./dto";
 
 const API_URL = "http://localhost:5173/api";
 
 // Obtener todos los artículos
-const getArticles = async (): Promise<Article[]> => {
+const getArticles = async (): Promise<ArticleType[]> => {
   try {
     const response = await fetch(`${API_URL}/articles`);
     if (!response.ok) {
@@ -31,9 +21,9 @@ const getArticles = async (): Promise<Article[]> => {
 };
 
 // Obtener un artículo por ID
-const getArticleByName = async (name: string): Promise<Article | undefined> => {
+const getArticleByName = async (name: string): Promise<ArticleType | undefined> => {
   return new Promise((resolve) => {
-    fetch(`${API_URL}/articles/${name}`)
+    fetch(`${API_URL}/article/${name}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Article not found");
@@ -45,4 +35,64 @@ const getArticleByName = async (name: string): Promise<Article | undefined> => {
   });
 };
 
-export { getArticles, getArticleByName };
+const upvoteArticle = async (
+  name: string,
+  headersAuth: { headers: { authtoken: string } } | object
+): Promise<number> => {
+  try {
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...headersAuth
+    };
+
+    const response = await fetch(`${API_URL}/article/${name}/upvote`, requestOptions);
+
+    if (!response.ok) {
+      throw new Error(`Error upvoting article: ${response.status} ${response.statusText}`);
+    }
+
+    const updatedArticleData = await response.json();
+    return updatedArticleData.upvotes;
+  } catch (error) {
+    console.error("Error upvoting article:", error);
+    throw error;
+  }
+};
+
+const addCommentToArticle = async (
+  name: string,
+  nameText: string,
+  commentText: string,
+  headersAuth: { authtoken: string } | object
+): Promise<commentType[]> => {
+  try {
+    const response = await fetch(`${API_URL}/article/${name}/comment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...headersAuth,
+      body: JSON.stringify({
+        postedBy: nameText,
+        text: commentText,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Error adding comment: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const updatedArticleData = await response.json();
+    return updatedArticleData.comments;
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    throw new Error(error.message as string);
+  }
+};
+
+export { getArticles, getArticleByName, upvoteArticle, addCommentToArticle };

@@ -2,19 +2,29 @@ import express from 'express';
 import { MongoClient, ServerApiVersion } from 'mongodb';
 import admin from 'firebase-admin';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const credential = JSON.parse(fs.readFileSync('./credentials.json', 'utf8'));
+
+const PORT = process.env.PORT || 8000;
 
 admin.initializeApp({
     credential: admin.credential.cert(credential)
 });
 
 const app = express();
-app.use(express.json()); // Middleware to parse JSON bodies
+app.use(express.json());
 
 // ConnectTO MongoDB
 let db;
 const connectToDB = async () => {
-    const uri = 'mongodb://localhost:27017';
+    const uri = process.env.MONGODB_USERNAME
+        ? `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster0.2ro1giy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+        : 'mongodb://localhost:27017';
+    
     const client = new MongoClient(uri, {
         serverApi: {
             version: ServerApiVersion.v1,
@@ -29,7 +39,6 @@ const connectToDB = async () => {
     db = client.db('blog_fullstack');
 }
 
-const PORT = process.env.PORT || 8000;
 
 app.get('/api', (req, res) => {
     res.send('Welcome to my Blog Api!');
@@ -46,6 +55,12 @@ app.get('/api/articles', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+app.use(express.static(path.join(__dirname, '../dist')));
+
+app.get(/^(?!\/api).+/, async (req, res) => {
+    res.sendFile(path.join(__dirname, '..dist/index.html'));
+})
 
 app.get('/api/article/:name', async (req, res) => {
     try {
@@ -86,10 +101,10 @@ app.post("/api/article/:name/upvote", async (req, res) => {
     const { uid } = req.user;
 
     const article = await db.collection('articles').findOne({ name });
-   
+
     const upvoteIds = article.upvoteIds || [];
     const canUpvtoe = uid && !upvoteIds.includes(uid);
-   
+
     if (canUpvtoe) {
         const updatedArticle = await db.collection('articles').findOneAndUpdate(
             { name },

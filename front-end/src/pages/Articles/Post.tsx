@@ -55,6 +55,10 @@ const Article = () => {
     }
   };
 
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <section className="container flex flex-col justify-center items-center mx-auto mt-10 p-4 bg-white rounded-lg shadow-md">
       <h1 className="text-4xl font-bold">{name}</h1>

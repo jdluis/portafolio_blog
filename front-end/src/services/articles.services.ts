@@ -90,8 +90,11 @@ const addCommentToArticle = async (
     const updatedArticleData = await response.json();
     return updatedArticleData.comments;
   } catch (error) {
-    console.error("Error adding comment:", error);
-    throw new Error(error.message as string);
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error("An unknown error occurred");
+    }
   }
 };
 

@@ -4,6 +4,9 @@ import admin from 'firebase-admin';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +27,7 @@ const connectToDB = async () => {
     const uri = process.env.MONGODB_USERNAME
         ? `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster0.2ro1giy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
         : 'mongodb://localhost:27017';
-    
+
     const client = new MongoClient(uri, {
         serverApi: {
             version: ServerApiVersion.v1,

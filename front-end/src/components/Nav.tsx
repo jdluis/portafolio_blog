@@ -40,14 +40,6 @@ const Nav = () => {
               Posts
             </Link>
           </li>
-          <li>
-            <Link
-              to="/post/CSS"
-              className="hover:text-blue-400 transition duration-300"
-            >
-              Post 1
-            </Link>
-          </li>
         </ul>
 
         {/* User Info */}

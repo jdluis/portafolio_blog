@@ -25,4 +25,4 @@ dist-ssr
 
 # Security
 back-end/credentials.json
-.env
+.env*

@@ -99,6 +99,17 @@ app.use(async (req, res, next) => {
     }
 });
 
+app.post("/api/article", async (req, res) => {
+    const { uid } = req.user;
+
+    const article = await db.collection('articles').createOne({ ...req.body, upvoteIds: [], comments: [] });
+
+    const upvoteIds = article.upvoteIds || [];
+    const canUpvtoe = uid && !upvoteIds.includes(uid);
+
+   
+});
+
 app.post("/api/article/:name/upvote", async (req, res) => {
     const { name } = req.params;
     const { uid } = req.user;

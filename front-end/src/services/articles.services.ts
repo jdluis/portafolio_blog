@@ -19,7 +19,42 @@ const getArticles = async (): Promise<ArticleType[]> => {
   }
 };
 
-const getArticleByName = async (name: string): Promise<ArticleType | undefined> => {
+const createNewArticle = async (
+  title: string,
+  content: string,
+  headersAuth: { headers: { authtoken: string } } | object
+): Promise<ArticleType> => {
+  try {
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        content,
+      }),
+      ...headersAuth,
+    };
+
+    const response = await fetch(`${API_URL}/article`, requestOptions);
+    if (!response.ok) {
+      throw new Error(
+        `Error fetching articles: ${response.status} ${response.statusText}`
+      );
+    }
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+    return {} as ArticleType;
+  }
+};
+
+const getArticleByName = async (
+  name: string
+): Promise<ArticleType | undefined> => {
   return new Promise((resolve) => {
     fetch(`${API_URL}/article/${name}`)
       .then((response) => {
@@ -43,13 +78,18 @@ const upvoteArticle = async (
       headers: {
         "Content-Type": "application/json",
       },
-      ...headersAuth
+      ...headersAuth,
     };
 
-    const response = await fetch(`${API_URL}/article/${name}/upvote`, requestOptions);
+    const response = await fetch(
+      `${API_URL}/article/${name}/upvote`,
+      requestOptions
+    );
 
     if (!response.ok) {
-      throw new Error(`Error upvoting article: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Error upvoting article: ${response.status} ${response.statusText}`
+      );
     }
 
     const updatedArticleData = await response.json();
@@ -96,4 +136,10 @@ const addCommentToArticle = async (
   }
 };
 
-export { getArticles, getArticleByName, upvoteArticle, addCommentToArticle };
+export {
+  getArticles,
+  getArticleByName,
+  upvoteArticle,
+  addCommentToArticle,
+  createNewArticle,
+};

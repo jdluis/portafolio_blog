@@ -1,8 +1,7 @@
 import { ArticleType, commentType } from "./dto";
 
-const API_URL = "http://localhost:5173/api";
+const API_URL = "/api";
 
-// Obtener todos los artículos
 const getArticles = async (): Promise<ArticleType[]> => {
   try {
     const response = await fetch(`${API_URL}/articles`);
@@ -20,7 +19,6 @@ const getArticles = async (): Promise<ArticleType[]> => {
   }
 };
 
-// Obtener un artículo por ID
 const getArticleByName = async (name: string): Promise<ArticleType | undefined> => {
   return new Promise((resolve) => {
     fetch(`${API_URL}/article/${name}`)

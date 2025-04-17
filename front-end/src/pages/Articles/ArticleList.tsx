@@ -35,8 +35,8 @@ const ArticleList = () => {
                 key={article.id}
                 className="flex justify-center items-start align-middle bg-gray-100 p-4 rounded-lg shadow-md w-full max-w-md"
               >
-                <Link to={`/post/${article.name}`}>
-                  <h2 className="text-lg font-bold">{article.name}</h2>
+                <Link to={`/post/${article.title}`}>
+                  <h2 className="text-lg font-bold">{article.title}</h2>
                   <p className="text-gray-700">Upvotes: {article.upvotes}</p>
                   <p className="text-sm font-light text-gray-500">
                     <span>Click here to read more</span>

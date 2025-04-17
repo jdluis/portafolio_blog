@@ -65,15 +65,15 @@ app.get(/^(?!\/api).+/, async (req, res) => {
     res.sendFile(path.join(__dirname, '..dist/index.html'));
 })
 
-app.get('/api/article/:name', async (req, res) => {
+app.get('/api/article/:title', async (req, res) => {
     try {
         if (!req.params) {
             return res.status(400).send('Bad Request: No params provided');
         }
-        const { name } = req.params;
+        const { title } = req.params;
 
         const articlesCollection = db.collection('articles');
-        const articleFound = await articlesCollection.findOne({ name });
+        const articleFound = await articlesCollection.findOne({ title });
         res.json(articleFound);
     } catch (error) {
         res.sendStatus(500).send('Internal Server Error');
@@ -102,7 +102,7 @@ app.use(async (req, res, next) => {
 app.post("/api/article", async (req, res) => {
     const { uid } = req.user;
 
-    const article = await db.collection('articles').createOne({ ...req.body, upvoteIds: [], comments: [] });
+    const article = await db.collection('articles').insertOne({ ...req.body, upvoteIds: [], comments: [] });
 
     const upvoteIds = article.upvoteIds || [];
     const canUpvtoe = uid && !upvoteIds.includes(uid);
@@ -110,18 +110,18 @@ app.post("/api/article", async (req, res) => {
    
 });
 
-app.post("/api/article/:name/upvote", async (req, res) => {
-    const { name } = req.params;
+app.post("/api/article/:title/upvote", async (req, res) => {
+    const { title } = req.params;
     const { uid } = req.user;
 
-    const article = await db.collection('articles').findOne({ name });
+    const article = await db.collection('articles').findOne({ title });
 
     const upvoteIds = article.upvoteIds || [];
     const canUpvtoe = uid && !upvoteIds.includes(uid);
 
     if (canUpvtoe) {
         const updatedArticle = await db.collection('articles').findOneAndUpdate(
-            { name },
+            { title },
             {
                 $inc: { upvotes: 1 },
                 $push: { upvoteIds: uid }
@@ -134,13 +134,13 @@ app.post("/api/article/:name/upvote", async (req, res) => {
     }
 });
 
-app.post("/api/article/:name/comment", async (req, res) => {
-    const { name } = req.params;
+app.post("/api/article/:title/comment", async (req, res) => {
+    const { title } = req.params;
     const { text, postedBy } = req.body;
 
     const commentToAdd = { text, postedBy }
 
-    const updateArticle = await db.collection('articles').findOneAndUpdate({ name }, {
+    const updateArticle = await db.collection('articles').findOneAndUpdate({ title }, {
         $push: { comments: commentToAdd }
     },
         {

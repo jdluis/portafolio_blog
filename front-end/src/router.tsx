@@ -17,11 +17,6 @@ const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
-   
-      {
-        path: "/about",
-        element: <div>About</div>,
-      },
       {
         path: "/posts",
         element: <PostList />,
@@ -31,10 +26,10 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: "/post/:name",
+        path: "/post/:title",
         element: <Post />,
         loader: async ({ params }) => {
-          const post = getArticleByName(params.name as string);
+          const post = getArticleByName(params.title as string);
           return post;
         },
       },

@@ -26,14 +26,6 @@ const Nav = () => {
           </li>
           <li>
             <Link
-              to="/about"
-              className="hover:text-blue-400 transition duration-300"
-            >
-              About
-            </Link>
-          </li>
-          <li>
-            <Link
               to="/posts"
               className="hover:text-blue-400 transition duration-300"
             >

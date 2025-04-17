@@ -6,14 +6,15 @@ export type commentType = {
   
   export interface User {
     id: string;
-    name: string;
+    title: string;
     email: string;
     createdAt: string;
   }
 
   export interface ArticleType {
     id: string;
-    name: string;
+    title: string;
+    content: string;
     upvotes: number;
     comments:[commentType];
   }

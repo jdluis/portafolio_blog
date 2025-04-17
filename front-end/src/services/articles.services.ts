@@ -54,10 +54,10 @@ const createNewArticle = async (
 };
 
 const getArticleByName = async (
-  name: string
+  title: string
 ): Promise<ArticleType | undefined> => {
   return new Promise((resolve) => {
-    fetch(`${API_URL}/article/${name}`)
+    fetch(`${API_URL}/article/${title}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Article not found");
@@ -70,7 +70,7 @@ const getArticleByName = async (
 };
 
 const upvoteArticle = async (
-  name: string,
+  title: string,
   headersAuth: { headers: { authtoken: string } } | object
 ): Promise<number> => {
   try {
@@ -83,7 +83,7 @@ const upvoteArticle = async (
     };
 
     const response = await fetch(
-      `${API_URL}/article/${name}/upvote`,
+      `${API_URL}/article/${title}/upvote`,
       requestOptions
     );
 
@@ -102,13 +102,13 @@ const upvoteArticle = async (
 };
 
 const addCommentToArticle = async (
-  name: string,
+  title: string,
   nameText: string,
   commentText: string,
   headersAuth: { authtoken: string } | object
 ): Promise<commentType[]> => {
   try {
-    const response = await fetch(`${API_URL}/article/${name}/comment`, {
+    const response = await fetch(`${API_URL}/article/${title}/comment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -10,13 +10,14 @@ import {
 } from "../../services/articles.services";
 
 const Article = () => {
-  const { name } = useParams();
+  const { title } = useParams();
   const { isLoading, user } = useUser();
 
-  const { comments: initialComments, upvotes: initialUpvotes }: ArticleType =
+  const { comments: initialComments, upvotes: initialUpvotes, content }: ArticleType =
     useLoaderData();
   const [upvotes, setUpvotes] = useState<number>(initialUpvotes);
   const [comments, setComments] = useState<commentType[]>(initialComments);
+
 
   const getAuthHeaders = async () => {
     const token = user && (await user.getIdToken());
@@ -30,9 +31,9 @@ const Article = () => {
 
   const onUpvoteClicked = async () => {
     try {
-      if (!name) return;
+      if (!title) return;
       const headersAuth = await getAuthHeaders();
-      const updatedUpvotes = await upvoteArticle(name, headersAuth);
+      const updatedUpvotes = await upvoteArticle(title, headersAuth);
       setUpvotes(updatedUpvotes);
     } catch (error) {
       console.error("Error upvoting article:", error);
@@ -41,10 +42,10 @@ const Article = () => {
 
   const onAddComment = async (nameText: string, commentText: string) => {
     try {
-      if (!name) return;
+      if (!title) return;
       const headersAuth = await getAuthHeaders();
       const updatedComments = await addCommentToArticle(
-        name,
+        title,
         nameText,
         commentText,
         headersAuth
@@ -61,8 +62,12 @@ const Article = () => {
 
   return (
     <section className="container flex flex-col justify-center items-center mx-auto mt-10 p-4 bg-white rounded-lg shadow-md">
-      <h1 className="text-4xl font-bold">{name}</h1>
+      <h1 className="text-4xl font-bold">{title}</h1>
       <p className="text-xl">{upvotes}</p>
+
+      <article>
+        {content}
+      </article>
       <button
         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
         onClick={onUpvoteClicked}

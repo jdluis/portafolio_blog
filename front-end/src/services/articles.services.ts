@@ -48,7 +48,8 @@ const createNewArticle = async (
     return data;
   } catch (error) {
     console.error("Error fetching articles:", error);
-    return {} as ArticleType;
+
+    throw error;
   }
 };
 
